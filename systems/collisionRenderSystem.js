@@ -31,11 +31,21 @@ export function createCollisionRenderSystem(scene) {
     // Ensure it is always rendered on top
     graphics.setDepth(1000);
 
+    const graphicsNormals = scene.add.graphics({
+        lineStyle: {
+            width: 10,
+            color: 0x0000ff,
+            alpha: 1
+        }
+    });
+    graphicsNormals.setDepth(1000);
+
 
     return defineSystem((world) => {
         const entities = collisionQuery(world);
 
         graphics.clear();
+        graphicsNormals.clear();
 
 
         for (let i = 0; i < entities.length; ++i) {
@@ -44,6 +54,8 @@ export function createCollisionRenderSystem(scene) {
             const posY = PositionComponent.y[eid];
             const vertexX = CollisionComponent.verticesX[eid];
             const vertexY = CollisionComponent.verticesY[eid];
+            const normalX = CollisionComponent.lastCollisionNormalX[eid];
+            const normalY = CollisionComponent.lastCollisionNormalY[eid];
             const isColliding = CollisionComponent.isColliding[eid];
 
             if (vertexX && vertexY && vertexX.length > 0) {
@@ -67,6 +79,18 @@ export function createCollisionRenderSystem(scene) {
 
                 graphics.lineTo(points[0].x, points[0].y);
                 graphics.strokePath();
+
+
+                graphics.lineTo(points[0].x, points[0].y);
+                graphics.strokePath();
+
+                graphicsNormals.lineStyle(10, 0x0000ff, 1);
+                graphicsNormals.beginPath();
+                graphicsNormals.moveTo(posX, posY);
+                graphicsNormals.lineTo(posX + normalX * 30, posY + normalY * 30);
+                graphicsNormals.strokePath();
+                graphicsNormals.closePath();
+
             }
         }
 

@@ -20,13 +20,11 @@ const Vector2 = Phaser.Math.Vector2;
  * @return {Phaser.Math.Vector2} The support point in the given direction.
  */
 function support(vertices1, count1, vertices2, count2, direction) {
-    const i = furthestVertex(vertices1, count1, direction);
-
-    const negDirection = direction.clone().negate();
-    const j = furthestVertex(vertices2, count2, negDirection);
+    const p1 = furthestVertex(vertices1, count1, direction);
+    const p2 = furthestVertex(vertices2, count2, direction.clone().negate());
 
     // The Minkowski difference
-    return vertices1[i].clone().subtract(vertices2[j]);
+    return p1.clone().subtract(p2);
 }
 
 /**
@@ -35,7 +33,7 @@ function support(vertices1, count1, vertices2, count2, direction) {
  * @param {Phaser.Math.Vector2[]} vertices - An array of vertices.
  * @param {number} count - The number of vertices in the array.
  * @param {Phaser.Math.Vector2} direction - The direction in which to find the furthest vertex.
- * @return {number} The index of the furthest vertex in the given direction.
+ * @return {Vector2} The index of the vertex that is furthest in the given direction.
  */
 function furthestVertex(vertices, count, direction) {
     let maxProduct = vertices[0].dot(direction);
@@ -49,8 +47,17 @@ function furthestVertex(vertices, count, direction) {
         }
     }
 
-    return index;
+    return vertices[index];
 }
+/**
+ * The result object containing collision status and normal vector.
+ *
+ * @typedef {Object} CollisionResult
+ * @property {boolean} isColliding - Whether the shapes are colliding.
+ * @property {number} normalX - The x component of the collision normal.
+ * @property {number} normalY - The y component of the collision normal.
+ */
+
 
 /**
  * Performs the Gilbert-Johnson-Keerthi (GJK) collision detection algorithm to determine if two shapes intersect.
@@ -59,58 +66,92 @@ function furthestVertex(vertices, count, direction) {
  * @param {number} countA - The number of vertices in the first shape.
  * @param {Phaser.Math.Vector2[]} verticesB - An array of vertices representing the second shape.
  * @param {number} countB - The number of vertices in the second shape.
- * @return {boolean} Returns true if the shapes intersect, otherwise false.
+ * @return {CollisionResult} The result of the collision detection.
  */
-function gjkCollision(verticesA, countA, verticesB, countB) {
+export function gjkCollision(verticesA, countA, verticesB, countB) {
     /** @type {Phaser.Math.Vector2[]} */
     const simplex = [];
 
+    const result = {
+        isColliding: false,
+        normalX: 0,
+        normalY: 0,
+    }
+
     const centerA = getCenterOfShape(verticesA, countA);
     const centerB = getCenterOfShape(verticesB, countB);
-    const direction = new Vector2(
-        centerB.x - centerA.x,
-        centerB.y - centerA.y
-    );
+    const direction = centerA.clone().subtract(centerB);
 
-    direction.normalize();
+    if (direction.x === 0 && direction.y === 0)
+    {
+        direction.x = 1;
+    }
 
     const firstSupport = support(verticesA, countA, verticesB, countB, direction);
-    simplex.push(firstSupport);
+    simplex.push(firstSupport.clone());
 
     direction.x = -firstSupport.x;
     direction.y = -firstSupport.y;
+
     direction.normalize();
 
     const MAX_ITERATIONS = 100;
     for (let i = 0; i < MAX_ITERATIONS; i++) {
         const a = support(verticesA, countA, verticesB, countB, direction);
-
-        if (a.dot(direction) < 0) {
-            return false;
-        }
-
         simplex.push(a);
 
-        if (handleSimplex(simplex, direction)) {
-            return true;
+        if (a.dot(direction) <= 0) {
+            result.isColliding = false;
+            return result
+        }
+
+        if (containsOrigin(simplex, direction)) {
+            result.isColliding = true;
+            const normal = epaCollision(simplex, verticesA, countA, verticesB, countB);
+            result.normalX = normal.x;
+            result.normalY = normal.y;
+            return result;
         }
     }
-    return false;
+    return result;
 }
 
-/**
- * Handles the simplex based on its current state and updates the search direction.
- *
- * @param {Phaser.Math.Vector2[]} simplex - The current simplex, which is an array of points.
- * @param {Phaser.Math.Vector2} direction - The current search direction, which will be updated.
- * @return {boolean} Returns true if the simplex contains the origin, otherwise false.
- */
-function handleSimplex(simplex, direction) {
-    if (simplex.length === 2) {
-        return handleLine(simplex, direction);
+function containsOrigin(simplex, direction) {
+    const a = simplex[simplex.length - 1];
+    const ao = a.clone().negate();
+    if (simplex.length === 3) {
+        const b = simplex[1];
+        const c = simplex[0];
+
+        const ab = b.clone().subtract(a);
+        const ac = c.clone().subtract(a);
+
+        const abPerp = tripleProduct(ac, ab, ab);
+        const acPerp = tripleProduct(ab, ac, ac);
+
+        if (abPerp.dot(ao) > 0) {
+            simplex.splice(0, 1);
+            direction.x = abPerp.x;
+            direction.y = abPerp.y;
+        } else {
+            if (acPerp.dot(ao) > 0) {
+                simplex.splice(1, 1);
+                direction.x = acPerp.x;
+                direction.y = acPerp.y;
+            } else {
+                return true;
+            }
+        }
+    } else {
+        // Then the simplex is a line
+        const b = simplex[0];
+        const ab = b.clone().subtract(a);
+        const abPerp = tripleProduct(ab, ao, ab);
+        direction.x = abPerp.x;
+        direction.y = abPerp.y;
     }
 
-    return handleTriangle(simplex, direction);
+    return false;
 }
 
 function tripleProduct(a, b, c) {
@@ -120,61 +161,63 @@ function tripleProduct(a, b, c) {
     return new Vector2(
         b.x * ac - a.x * bc,
         b.y * ac - a.y * bc
-    ).normalize();
+    );
 }
 
-/**
- * Handles the case when the simplex is a line segment and updates the search direction.
- *
- * @param {Phaser.Math.Vector2[]} simplex - The current simplex, which is an array of points.
- * @param {Phaser.Math.Vector2} direction - The current search direction, which will be updated.
- */
-function handleLine(simplex, direction) {
-    const b = simplex[0];
-    const a = simplex[1];
-    const ab = b.clone().subtract(a);
-    const ao = a.clone().negate();
-    const perpAB = tripleProduct(ab, ao, ab);
-    direction.x = perpAB.x;
-    direction.y = perpAB.y;
 
-
-    return false;
-}
 
 /**
- * Handles the case when the simplex is a triangle and updates the search direction.
+ * Performs the EPA (Expanding Polytope Algorithm) collision detection.
  *
- * @param {Phaser.Math.Vector2[]} simplex - The current simplex, which is an array of points.
- * @param {Phaser.Math.Vector2} direction - The current search direction, which will be updated.
- * @return {boolean} Returns true if the simplex contains the origin, otherwise false.
+ * @param {Phaser.Math.Vector2[]} polytope - The vertices of the polytope.
+ * @param {Phaser.Math.Vector2[]} verticesA - The vertices of shape A.
+ * @param {number} countA - The number of vertices in shape A.
+ * @param {Phaser.Math.Vector2[]} verticesB - The vertices of shape B.
+ * @param {number} countB - The number of vertices in shape B.
+ * @returns {Phaser.Math.Vector2} - The minimum translation vector for collision resolution.
  */
-function handleTriangle(simplex, direction) {
-    const a = simplex[2];
-    const b = simplex[1];
-    const c = simplex[0];
+function epaCollision(polytope, verticesA, countA, verticesB, countB) {
+    let minIndex = 0;
+    let minDistance = Infinity;
+    let minNormal;
 
-    const ab = b.clone().subtract(a);
-    const ac = c.clone().subtract(a);
-    const ao = a.clone().negate();
+    let iterations = 0;
 
-    const ABperp = tripleProduct(ac, ab, ab);
-    const ACperp = tripleProduct(ab, ac, ac);
+    while (minDistance === Infinity) {
+        iterations++;
 
-    // Is in region AB
-    if (ABperp.dot(ao) >= 0) {
-        simplex.splice(0, 1);
-        direction.x = ABperp.x;
-        direction.y = ABperp.y;
-        return false;
-        // Is in region AC
-    } else if (ACperp.dot(ao) >= 0) {
-        simplex.splice(1, 1);
-        direction.x = ACperp.x;
-        direction.y = ACperp.y;
-        return false;
+        for (let i = 0; i < polytope.length; i++) {
+            const j = (i + 1) % polytope.length;
+
+            const vertexI = polytope[i].clone();
+            const vertexJ = polytope[j].clone();
+
+            const edgeIJ = vertexJ.subtract(vertexI);
+            /** @type {Phaser.Math.Vector2} */
+            const normal = new Vector2(edgeIJ.y, -edgeIJ.x).normalize();
+            let distance = normal.dot(vertexI);
+
+            if (distance < 0) {
+                distance *= -1;
+                normal.negate();
+            }
+            if (distance < minDistance) {
+                minDistance = distance;
+                minNormal = normal;
+                minIndex = j;
+            }
+        }
+
+        let sup = support(verticesA, countA, verticesB, countB, minNormal);
+        let supDistance = minNormal.dot(sup);
+
+        if (Math.abs(supDistance - minDistance) > 0.001) {
+            minDistance = Infinity;
+            polytope.splice(minIndex, 0, sup);
+        }
     }
-    return true;
+
+    return minNormal.scale(minDistance + 0.001).normalize();
 }
 
 function getVerticesWorldSpace(posX, posY, vertexX, vertexY, vertexCount) {
@@ -204,19 +247,14 @@ function getCenterOfShape(vertices, count) {
 /**
  * Creates a collision detection system for the given scene.
  *
- * @param {Phaser.Scene} scene - The Phaser scene to which the collision system will be added.
  * @return {CollisionSystem} The collision system function that processes the world and detects collisions.
  */
-export function createCollisionSystem(scene) {
+export function createCollisionSystem() {
     const collisionQuery = defineQuery([CollisionComponent, PositionComponent]);
 
-    const debugGraphics = scene.add.graphics();
-    debugGraphics.setDepth(1000);
 
     return defineSystem((world) => {
         const entities = collisionQuery(world);
-
-        debugGraphics.clear();
 
         // We don't need partitioning for our small game. So we just loop through it all 🙃
         for (let i = 0; i < entities.length; ++i) {
@@ -238,13 +276,17 @@ export function createCollisionSystem(scene) {
                 const verticesB = getVerticesWorldSpace(posBx, posBy, verticesBX, verticesBY, vertexCountB);
 
 
-                const isColliding = gjkCollision(verticesA, vertexCount, verticesB, vertexCountB);
-                CollisionComponent.isColliding[eidA] = isColliding ? 1 : 0;
-                CollisionComponent.isColliding[eidB] = isColliding ? 1 : 0;
+                const result = gjkCollision(verticesA, vertexCount, verticesB, vertexCountB);
+                CollisionComponent.isColliding[eidA] = result.isColliding ? 1 : 0;
+                CollisionComponent.isColliding[eidB] = result.isColliding ? 1 : 0;
 
-                if (isColliding) {
-                    // --- We can add more advanced properties here ---
-                    //console.log(`Entity ${eidA} collided with entity ${eidB}`);
+                if (result.isColliding) {
+                    CollisionComponent.lastCollisionNormalX[eidA] = result.normalX;
+                    CollisionComponent.lastCollisionNormalY[eidA] = result.normalY;
+
+                    CollisionComponent.lastCollisionNormalX[eidB] = -result.normalX;
+                    CollisionComponent.lastCollisionNormalY[eidB] = -result.normalY;
+                    console.log(`Entity ${eidA} collided with ${eidB} with normal: ${result.normalX}, ${result.normalY}`);
 
                 }
             }

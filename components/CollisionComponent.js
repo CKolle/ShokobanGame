@@ -11,6 +11,8 @@ export const collisionComponent = defineComponent({
     isTrigger: Types.ui8, // 1 if it has just triggered
     vertexCount: Types.ui8,
     isColliding: Types.ui8,
+    lastCollisionNormalX: Types.f32,
+    lastCollisionNormalY: Types.f32,
 });
 
 export default  collisionComponent;

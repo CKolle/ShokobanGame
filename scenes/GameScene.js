@@ -73,7 +73,7 @@ export class GameScene extends Phaser.Scene {
         this.#spriteSystem = createSpriteSystem(this, ["heart"]);
         this.#playerInputSystem = createPlayerInputSystem(this.#cursors, this.#player);
         this.#gridPathingSystem = createGridPathingSystem()
-        this.#collisionSystem = createCollisionSystem(this);
+        this.#collisionSystem = createCollisionSystem();
         this.#debugCollisionRendererSystem = createCollisionRenderSystem(this);
     }
 
