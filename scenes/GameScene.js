@@ -21,7 +21,9 @@ export class GameScene extends Phaser.Scene {
     #movementInitSystem
     /** @private {PlayerInputSystem} */
     #playerInputSystem
+    /** @private {ActiveMovementSystem} */
     #activeMovementSystem
+    /** @private {CollisionSystem} */
     #collisionSystem
     /** @private {BoxFactory} */
     #boxFactory;
@@ -60,7 +62,7 @@ export class GameScene extends Phaser.Scene {
     }
 
 
-    create(data) {
+    create(_) {
         this.#world = createWorld();
         this.#playerFactory = new PlayerFactory(this.#world);
         this.#boxFactory = new BoxFactory(this.#world)
@@ -69,7 +71,6 @@ export class GameScene extends Phaser.Scene {
         this.#player = this.#playerFactory.create(32, 32, 1);
         this.#movementInitSystem = createMovementInitSystem(this, 64);
         this.#spriteSystem = createSpriteSystem(this, ["heart"]);
-        const movementSpeed = 1;
         this.#playerInputSystem = createPlayerInputSystem(this.#cursors, this.#player);
         this.#activeMovementSystem = createActiveMovementSystem()
         this.#collisionSystem = createCollisionSystem(this);

@@ -194,7 +194,17 @@ function getCenterOfShape(vertices, count) {
     return center.scale(1 / count);
 }
 
+/**
+ * @typedef {function(World): void} CollisionSystem
+ */
+
 // TODO Create a way to handle collisions between concave shapes by turning them into multiple convex shapes
+/**
+ * Creates a collision detection system for the given scene.
+ *
+ * @param {Phaser.Scene} scene - The Phaser scene to which the collision system will be added.
+ * @return {CollisionSystem} The collision system function that processes the world and detects collisions.
+ */
 export function createCollisionSystem(scene) {
     const collisionQuery = defineQuery([CollisionComponent, PositionComponent]);
 

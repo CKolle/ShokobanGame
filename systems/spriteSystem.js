@@ -10,7 +10,7 @@ import SpriteComponent from "../components/SpriteComponent.js";
  *
  * @param {Phaser.Scene} scene
  * @param {String[]}textures
- * @returns {(function(*, ...[*]): *)|*}
+ * @returns {SpriteSystem}
  */
 export function createSpriteSystem(scene, textures)
 {

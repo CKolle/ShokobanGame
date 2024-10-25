@@ -16,8 +16,8 @@ export class BoxFactory extends BaseEntityFactory {
 
         // Make the box a bit smaller than the tile size
 
-        CollisionComponent.verticesX[entityId] = new Float32Array([-29, 29, 29, -29, -60]);
-        CollisionComponent.verticesY[entityId] = new Float32Array([-29, -29, 29, 29, 0]);
+        CollisionComponent.verticesX[entityId] = new Float32Array([-30, 30, 30, -30, -60]);
+        CollisionComponent.verticesY[entityId] = new Float32Array([-30, -30, 30, 30, 0]);
 
         // Set the vertex count
         CollisionComponent.vertexCount[entityId] = 5;
