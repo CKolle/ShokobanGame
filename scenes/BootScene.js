@@ -1,0 +1,3 @@
+class BootScene extends Phaser {
+
+}
