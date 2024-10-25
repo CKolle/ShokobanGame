@@ -1,7 +1,6 @@
 import {defineComponent, Types} from "../bitecs.mjs";
 
 // Note do not change the order of the properties
-// We want to align the memory layout as it uses a C++ struct under the hood in the JIT
 export const collisionComponent = defineComponent({
     // Each collision can have up to 8 vertices for now
     verticesX: [Types.f32, 16],

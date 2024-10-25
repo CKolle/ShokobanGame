@@ -177,7 +177,7 @@ function handleTriangle(simplex, direction) {
     return true;
 }
 
-function getVerticesWorldSpace(eid, posX, posY, vertexX, vertexY, vertexCount) {
+function getVerticesWorldSpace(posX, posY, vertexX, vertexY, vertexCount) {
     const worldVertices = [];
 
     for (let i = 0; i < vertexCount; ++i) {
@@ -226,7 +226,7 @@ export function createCollisionSystem(scene) {
             const verticesAX = CollisionComponent.verticesX[eidA];
             const verticesAY = CollisionComponent.verticesY[eidA];
             const vertexCount = CollisionComponent.vertexCount[eidA];
-            const verticesA = getVerticesWorldSpace(eidA, posAx, posAy, verticesAX, verticesAY, vertexCount);
+            const verticesA = getVerticesWorldSpace(posAx, posAy, verticesAX, verticesAY, vertexCount);
 
             for (let j = i + 1; j < entities.length; j++) {
                 const eidB = entities[j];
@@ -234,10 +234,11 @@ export function createCollisionSystem(scene) {
                 const posBy = PositionComponent.y[eidB];
                 const verticesBX = CollisionComponent.verticesX[eidB];
                 const verticesBY = CollisionComponent.verticesY[eidB];
-                const verticesB = getVerticesWorldSpace(eidB, posBx, posBy, verticesBX, verticesBY, CollisionComponent.vertexCount[eidB]);
+                const vertexCountB = CollisionComponent.vertexCount[eidB];
+                const verticesB = getVerticesWorldSpace(posBx, posBy, verticesBX, verticesBY, vertexCountB);
 
 
-                const isColliding = gjkCollision(verticesA, vertexCount, verticesB, CollisionComponent.vertexCount[eidB]);
+                const isColliding = gjkCollision(verticesA, vertexCount, verticesB, vertexCountB);
                 CollisionComponent.isColliding[eidA] = isColliding ? 1 : 0;
                 CollisionComponent.isColliding[eidB] = isColliding ? 1 : 0;
 
