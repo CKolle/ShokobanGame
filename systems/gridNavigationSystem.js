@@ -1,8 +1,7 @@
-import {addComponent, defineQuery, defineSystem, exitQuery, removeComponent} from "../bitecs.mjs";
+import {addComponent, defineQuery, defineSystem, removeComponent} from "../bitecs.mjs";
 import GridNavigatorComponent, {GRID_DIRECTIONS} from "../components/GridNavigatorComponent.js";
 import PositionComponent from "../components/PositionComponent.js";
 import GridPathMovementComponent from "../components/GridPathMovementComponent.js";
-import CollisionComponent from "../components/CollisionComponent.js";
 
 
 const DIRECTION_VECTORS = {
@@ -62,6 +61,7 @@ export function createGridNavigationSystem(scene, gridSize) {
             GridPathMovementComponent.direction[eid] = direction;
 
             // Remove grid movement component while active movement processes
+            // So we have to wait until the movement is done before we can navigate again
             removeComponent(world, GridNavigatorComponent, eid);
         }
 
