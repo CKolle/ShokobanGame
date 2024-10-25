@@ -81,7 +81,8 @@ function gjkCollision(verticesA, countA, verticesB, countB) {
     direction.y = -firstSupport.y;
     direction.normalize();
 
-    while (true) {
+    const MAX_ITERATIONS = 100;
+    for (let i = 0; i < MAX_ITERATIONS; i++) {
         const a = support(verticesA, countA, verticesB, countB, direction);
 
         if (a.dot(direction) < 0) {
@@ -94,6 +95,7 @@ function gjkCollision(verticesA, countA, verticesB, countB) {
             return true;
         }
     }
+    return false;
 }
 
 /**
