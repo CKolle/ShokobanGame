@@ -64,3 +64,5 @@ export class BaseEntityFactory {
         return entityId;
     }
 }
+
+export default BaseEntityFactory;

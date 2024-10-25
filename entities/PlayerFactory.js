@@ -1,5 +1,5 @@
 import PositionComponent from "../components/PositionComponent.js";
-import {BaseEntityFactory} from "./BaseEntityFactory.js";
+import BaseEntityFactory from "./BaseEntityFactory.js";
 import SpriteComponent from "../components/SpriteComponent.js";
 import GridMovementComponent from "../components/GridMovementComponent.js";
 import CollisionComponent from "../components/CollisionComponent.js";
@@ -23,11 +23,10 @@ export class PlayerFactory  extends BaseEntityFactory {
         GridMovementComponent.movementSpeed[entityId] = movementSpeed;
         SpriteComponent.textureId[entityId] = 0;
 
-        // Define the collision vertices
+        // Note we make the all elements a bit smaller than the tile size so they don't overlap when
+        // Standing next to each other
         CollisionComponent.verticesX[entityId] = new Float32Array([-30, 30, 30, -30]);
         CollisionComponent.verticesY[entityId] = new Float32Array([-30, -30, 30, 30]);
-
-        // Set the vertex count
         CollisionComponent.vertexCount[entityId] = 4;
     }
 
