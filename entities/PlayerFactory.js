@@ -1,7 +1,7 @@
 import PositionComponent from "../components/PositionComponent.js";
 import BaseEntityFactory from "./BaseEntityFactory.js";
 import SpriteComponent from "../components/SpriteComponent.js";
-import GridMovementComponent from "../components/GridMovementComponent.js";
+import GridNavigatorComponent from "../components/GridNavigatorComponent.js";
 import CollisionComponent from "../components/CollisionComponent.js";
 
 
@@ -17,10 +17,10 @@ export class PlayerFactory  extends BaseEntityFactory {
      * @param {number} movementSpeed - The movement speed
      */
     _initializeComponents(entityId, x, y, movementSpeed) {
-        this._addComponents(entityId, PositionComponent, GridMovementComponent, SpriteComponent, CollisionComponent);
+        this._addComponents(entityId, PositionComponent, GridNavigatorComponent, SpriteComponent, CollisionComponent);
         PositionComponent.x[entityId] = x;
         PositionComponent.y[entityId] = y;
-        GridMovementComponent.movementSpeed[entityId] = movementSpeed;
+        GridNavigatorComponent.movementSpeed[entityId] = movementSpeed;
         SpriteComponent.textureId[entityId] = 0;
 
         // Note we make the all elements a bit smaller than the tile size so they don't overlap when

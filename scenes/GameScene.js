@@ -1,9 +1,9 @@
 import {createWorld} from "../bitecs.mjs";
 import PlayerFactory from "../entities/PlayerFactory.js";
-import createMovementInitSystem from "../systems/movementSystem.js";
+import createGridNavigationSystem from "../systems/movementSystem.js";
 import createSpriteSystem from "../systems/spriteSystem.js";
 import createPlayerInputSystem from "../systems/playerInputSystem.js";
-import createActiveMovementSystem from "../systems/activeMovementSystem.js";
+import createGridPathingSystem from "../systems/activeMovementSystem.js";
 import createCollisionSystem from "../systems/collisionSystem.js";
 import BoxFactory from "../entities/BoxFactory.js";
 import createCollisionRenderSystem from "../systems/collisionRenderSystem.js";
@@ -17,12 +17,12 @@ export class GameScene extends Phaser.Scene {
     #player
     /** @private {SpriteSystem} */
     #spriteSystem
-    /** @private {MovementInitSystem} */
-    #movementInitSystem
+    /** @private {GridNavigationSystem} */
+    #gridNavigationSystem
     /** @private {PlayerInputSystem} */
     #playerInputSystem
-    /** @private {ActiveMovementSystem} */
-    #activeMovementSystem
+    /** @private {GridPathingSystem} */
+    #gridPathingSystem
     /** @private {CollisionSystem} */
     #collisionSystem
     /** @private {BoxFactory} */
@@ -69,10 +69,10 @@ export class GameScene extends Phaser.Scene {
         this.#boxFactory.create(160, 32);
         // TODO: Positions should be a part of the map data.
         this.#player = this.#playerFactory.create(32, 32, 1);
-        this.#movementInitSystem = createMovementInitSystem(this, 64);
+        this.#gridNavigationSystem = createGridNavigationSystem(this, 64);
         this.#spriteSystem = createSpriteSystem(this, ["heart"]);
         this.#playerInputSystem = createPlayerInputSystem(this.#cursors, this.#player);
-        this.#activeMovementSystem = createActiveMovementSystem()
+        this.#gridPathingSystem = createGridPathingSystem()
         this.#collisionSystem = createCollisionSystem(this);
         this.#debugCollisionRendererSystem = createCollisionRenderSystem(this);
     }
@@ -80,8 +80,8 @@ export class GameScene extends Phaser.Scene {
     update(time, delta) {
         this.#playerInputSystem(this.#world);
         this.#collisionSystem(this.#world);
-        this.#movementInitSystem(this.#world);
-        this.#activeMovementSystem(this.#world, delta);
+        this.#gridNavigationSystem(this.#world);
+        this.#gridPathingSystem(this.#world, delta);
         this.#spriteSystem(this.#world);
         this.#debugCollisionRendererSystem(this.#world)
     }

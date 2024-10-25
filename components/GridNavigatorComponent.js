@@ -10,10 +10,10 @@ export const GRID_DIRECTIONS = {
 }
 
 
-export const GridMovementComponent = defineComponent({
+export const GridNavigatorComponent = defineComponent({
     movementSpeed: Types.f32,
     direction: Types.ui8,
 });
 
 
-export default GridMovementComponent
+export default GridNavigatorComponent

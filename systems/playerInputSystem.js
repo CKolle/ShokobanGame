@@ -1,5 +1,5 @@
 import {defineSystem, hasComponent} from "../bitecs.mjs";
-import GridMovementComponent, {GRID_DIRECTIONS} from "../components/GridMovementComponent.js";
+import GridNavigatorComponent, {GRID_DIRECTIONS} from "../components/GridNavigatorComponent.js";
 
 /**
  * @typedef {function(World): void} PlayerInputSystem
@@ -18,7 +18,7 @@ export function createPlayerInputSystem(cursors, player) {
     return defineSystem((world) => {
         // Check if the player has the GridMovementComponent gets removed during an active movement
 
-        if (!hasComponent(world, GridMovementComponent, player)) {
+        if (!hasComponent(world, GridNavigatorComponent, player)) {
             return world;
         }
 
@@ -31,7 +31,7 @@ export function createPlayerInputSystem(cursors, player) {
 
         const activeInput = inputMappings.find(input => input.isDown);
 
-        GridMovementComponent.direction[player] = activeInput ? activeInput.direction : GRID_DIRECTIONS.NONE;
+        GridNavigatorComponent.direction[player] = activeInput ? activeInput.direction : GRID_DIRECTIONS.NONE;
 
         return world;
     });

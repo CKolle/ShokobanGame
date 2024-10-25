@@ -1,6 +1,6 @@
 import {defineComponent, Types} from "../bitecs.mjs";
 
-export const ActiveMovementComponent = defineComponent({
+export const GridPathMovementComponent = defineComponent({
     startX: Types.f32,
     startY: Types.f32,
     targetX: Types.f32,
@@ -10,4 +10,4 @@ export const ActiveMovementComponent = defineComponent({
     direction: Types.ui8,
 });
 
-export default ActiveMovementComponent;
+export default GridPathMovementComponent;

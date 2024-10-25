@@ -1,21 +1,21 @@
 import {addComponent, defineQuery, defineSystem, removeComponent} from "../bitecs.mjs";
-import ActiveMovementComponent from "../components/ActiveMovementComponent.js";
+import GridPathMovementComponent from "../components/GridPathMovementComponent.js";
 import PositionComponent from "../components/PositionComponent.js";
-import GridMovementComponent from "../components/GridMovementComponent.js";
+import GridNavigatorComponent from "../components/GridNavigatorComponent.js";
 import CollisionComponent from "../components/CollisionComponent.js";
 
 /**
- * @typedef {function(World, number): void} ActiveMovementSystem
+ * @typedef {function(World, number): void} GridPathingSystem
  */
 
 
 /**
  * Creates the active movement system
  * @param options - These are the options for the active movement system. E.g. easing function
- * @return {ActiveMovementSystem}
+ * @return {GridPathingSystem}
  */
-export function createActiveMovementSystem(options = {}) {
-    const activeMovementQuery = defineQuery([ActiveMovementComponent, PositionComponent, CollisionComponent]);
+export function createGridPathingSystem(options = {}) {
+    const activeMovementQuery = defineQuery([GridPathMovementComponent, PositionComponent, CollisionComponent]);
     const {
         easing = (t) => t,
     } = options;
@@ -37,53 +37,53 @@ export function createActiveMovementSystem(options = {}) {
             if (collision) {
 
                 // Reset the position to the starting position
-                PositionComponent.x[eid] = ActiveMovementComponent.startX[eid];
-                PositionComponent.y[eid] = ActiveMovementComponent.startY[eid];
+                PositionComponent.x[eid] = GridPathMovementComponent.startX[eid];
+                PositionComponent.y[eid] = GridPathMovementComponent.startY[eid];
 
                 // Restore grid movement component
-                addComponent(world, GridMovementComponent, eid);
-                GridMovementComponent.movementSpeed[eid] = ActiveMovementComponent.speed[eid];
+                addComponent(world, GridNavigatorComponent, eid);
+                GridNavigatorComponent.movementSpeed[eid] = GridPathMovementComponent.speed[eid];
 
                 // Reset the collision flag
                 CollisionComponent.isColliding[eid] = 0;
 
                 // Remove active movement last to preserve starting positions
-                removeComponent(world, ActiveMovementComponent, eid);
+                removeComponent(world, GridPathMovementComponent, eid);
 
                 return world;
 
             }
 
-            const speed = ActiveMovementComponent.speed[eid];
+            const speed = GridPathMovementComponent.speed[eid];
 
-            ActiveMovementComponent.progress[eid] += speed * deltaSec;
+            GridPathMovementComponent.progress[eid] += speed * deltaSec;
 
-            if (ActiveMovementComponent.progress[eid] < 1) {
+            if (GridPathMovementComponent.progress[eid] < 1) {
                 PositionComponent.x[eid] = lerp(
-                    ActiveMovementComponent.startX[eid],
-                    ActiveMovementComponent.targetX[eid],
-                    ActiveMovementComponent.progress[eid]
+                    GridPathMovementComponent.startX[eid],
+                    GridPathMovementComponent.targetX[eid],
+                    GridPathMovementComponent.progress[eid]
                 )
                 PositionComponent.y[eid] = lerp(
-                    ActiveMovementComponent.startY[eid],
-                    ActiveMovementComponent.targetY[eid],
-                    ActiveMovementComponent.progress[eid]
+                    GridPathMovementComponent.startY[eid],
+                    GridPathMovementComponent.targetY[eid],
+                    GridPathMovementComponent.progress[eid]
                 )
             } else {
                 // Movement complete
-                PositionComponent.x[eid] = ActiveMovementComponent.targetX[eid];
-                PositionComponent.y[eid] = ActiveMovementComponent.targetY[eid];
+                PositionComponent.x[eid] = GridPathMovementComponent.targetX[eid];
+                PositionComponent.y[eid] = GridPathMovementComponent.targetY[eid];
 
                 // Restore grid movement component
-                addComponent(world, GridMovementComponent, eid);
-                GridMovementComponent.movementSpeed[eid] = ActiveMovementComponent.speed[eid];
+                addComponent(world, GridNavigatorComponent, eid);
+                GridNavigatorComponent.movementSpeed[eid] = GridPathMovementComponent.speed[eid];
 
                 // Remove active movement
-                removeComponent(world, ActiveMovementComponent, eid);
+                removeComponent(world, GridPathMovementComponent, eid);
             }
         }
         return world;
     })
 }
 
-export default createActiveMovementSystem;
+export default createGridPathingSystem;
