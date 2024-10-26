@@ -2,16 +2,16 @@ import {defineSystem, hasComponent} from "../bitecs.mjs";
 import GridNavigatorComponent, {GRID_DIRECTIONS} from "../components/GridNavigatorComponent.js";
 
 /**
- * @typedef {function(World): void} PlayerInputSystem
+ * @typedef {function(World): void} PlayerGridInputSystem
  */
 
 /**
  * Creates the player input system.
  * @param {Phaser.Types.Input.Keyboard.CursorKeys} cursors The cursor keys
  * @param {number} player The player entity id
- * @returns {PlayerInputSystem}
+ * @returns {PlayerGridInputSystem}
  */
-export function createPlayerInputSystem(cursors, player) {
+export function createPlayerGridInputSystem(cursors, player) {
     // We pass in the player entity id to avoid having to query for it
 
 
@@ -37,4 +37,4 @@ export function createPlayerInputSystem(cursors, player) {
     });
 }
 
-export default createPlayerInputSystem
+export default createPlayerGridInputSystem

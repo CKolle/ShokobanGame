@@ -1,7 +1,7 @@
 import {defineComponent, Types} from "../bitecs.mjs";
 
 // Note do not change the order of the properties
-export const collisionComponent = defineComponent({
+export const CollisionComponent = defineComponent({
     // Each collision can have up to 8 vertices for now
     verticesX: [Types.f32, 16],
     verticesY: [Types.f32, 16],
@@ -15,4 +15,4 @@ export const collisionComponent = defineComponent({
     lastCollisionNormalY: Types.f32,
 });
 
-export default  collisionComponent;
+export default  CollisionComponent;
