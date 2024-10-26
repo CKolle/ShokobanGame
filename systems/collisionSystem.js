@@ -110,6 +110,7 @@ export function gjkCollision(verticesA, countA, verticesB, countB) {
             const normal = epaCollision(simplex, verticesA, countA, verticesB, countB);
             result.normalX = normal.x;
             result.normalY = normal.y;
+
             return result;
         }
     }
@@ -244,6 +245,7 @@ function getCenterOfShape(vertices, count) {
  */
 
 // TODO Create a way to handle collisions between concave shapes by turning them into multiple convex shapes
+// TODO Handle collisions for spheres should be fairly simple to implement
 /**
  * Creates a collision detection system for the given scene.
  *
@@ -281,11 +283,11 @@ export function createCollisionSystem() {
                 CollisionComponent.isColliding[eidB] = result.isColliding ? 1 : 0;
 
                 if (result.isColliding) {
-                    CollisionComponent.lastCollisionNormalX[eidA] = result.normalX;
-                    CollisionComponent.lastCollisionNormalY[eidA] = result.normalY;
+                    CollisionComponent.lastCollisionNormalX[eidA] = -result.normalX;
+                    CollisionComponent.lastCollisionNormalY[eidA] = -result.normalY;
 
-                    CollisionComponent.lastCollisionNormalX[eidB] = -result.normalX;
-                    CollisionComponent.lastCollisionNormalY[eidB] = -result.normalY;
+                    CollisionComponent.lastCollisionNormalX[eidB] = result.normalX;
+                    CollisionComponent.lastCollisionNormalY[eidB] = result.normalY;
                     console.log(`Entity ${eidA} collided with ${eidB} with normal: ${result.normalX}, ${result.normalY}`);
 
                 }
